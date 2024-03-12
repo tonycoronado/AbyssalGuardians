@@ -10,6 +10,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "DrawDebugHelpers.h"
+#include "OnlineSubsystem.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -50,6 +51,21 @@ AAbyssalGuardiansCharacter::AAbyssalGuardiansCharacter()
 
 	InteractionCheckFrequency = 0.1f;
 	InteractionCheckDistance = 225.0f;
+	
+	IOnlineSubsystem* OnlineSubsystem = IOnlineSubsystem::Get();
+	if(OnlineSubsystem)
+	{
+		OnlineSessionInterface = OnlineSubsystem->GetSessionInterface();
+		if(GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				15.f,
+				FColor::Blue,
+				FString::Printf(TEXT("Found subsystem %s"), *OnlineSubsystem->GetSubsystemName().ToString())
+			);
+		}
+	}
 }
 
 void AAbyssalGuardiansCharacter::BeginPlay()

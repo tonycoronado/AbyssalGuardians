@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
+#include "Interfaces/OnlineSessionInterface.h"
+#include "OnlineSubsystem.h"
 #include "Interfaces/AGInteractionInterface.h"
 #include "AbyssalGuardiansCharacter.generated.h"
 
@@ -118,6 +120,8 @@ protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	
+	// Pointer to the online session interface
+	TSharedPtr<class IOnlineSession, ESPMode::ThreadSafe> OnlineSessionInterface;
 
 };
 
