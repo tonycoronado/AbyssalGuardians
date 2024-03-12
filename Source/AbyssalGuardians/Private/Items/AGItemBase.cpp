@@ -5,6 +5,7 @@
 
 UAGItemBase::UAGItemBase()
 {
+	
 }
 
 UAGItemBase* UAGItemBase::CreateItemCopy() const
@@ -40,4 +41,5 @@ void UAGItemBase::SetQuantity(const int32 NewQuantity)
 
 void UAGItemBase::Use(AAbyssalGuardiansCharacter* Character)
 {
+	
 }

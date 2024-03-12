@@ -22,7 +22,15 @@ struct FInteractableData
 {
 	GENERATED_USTRUCT_BODY()
 
-	FInteractableData();
+	FInteractableData() :
+		InteractableType(EInteractableType::Pickups),
+	Name(FText::GetEmpty()),
+	Action(FText::GetEmpty()),
+	Quantity(0),
+	InteractionDuration(0.0f)
+	{
+		
+	};
 
 	UPROPERTY(EditInstanceOnly)
 	EInteractableType InteractableType;

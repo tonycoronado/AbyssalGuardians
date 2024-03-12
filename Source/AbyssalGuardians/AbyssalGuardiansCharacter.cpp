@@ -9,6 +9,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "DrawDebugHelpers.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -47,8 +48,8 @@ AAbyssalGuardiansCharacter::AAbyssalGuardiansCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
-	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+	InteractionCheckFrequency = 0.1f;
+	InteractionCheckDistance = 225.0f;
 }
 
 void AAbyssalGuardiansCharacter::BeginPlay()
@@ -87,6 +88,73 @@ void AAbyssalGuardiansCharacter::SetupPlayerInputComponent(class UInputComponent
 	}
 
 }
+
+void AAbyssalGuardiansCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if (GetWorld()->TimeSince(InteractionData.LastInteractionCheckTime) > InteractionCheckFrequency)
+	{
+		PerformInteractionCheck();
+	}
+}
+
+void AAbyssalGuardiansCharacter::PerformInteractionCheck()
+{
+	InteractionData.LastInteractionCheckTime= GetWorld()->GetTimeSeconds();
+
+	FVector TraceStart(GetPawnViewLocation());
+	FVector TraceEnd(TraceStart + (GetViewRotation().Vector() * InteractionCheckDistance));
+
+	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Red, false, 1.0f, 0, 2.0f);
+
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+	FHitResult TraceHit;
+
+	if (GetWorld()->LineTraceSingleByChannel(TraceHit, TraceStart, TraceEnd, ECC_Visibility, QueryParams))
+	{
+		if (TraceHit.GetActor()->GetClass()->ImplementsInterface(UAGInteractionInterface::StaticClass()))
+		{
+			const float Distance = (TraceStart - TraceHit.ImpactPoint).Size();
+
+			if (TraceHit.GetActor() != InteractionData.CurrentInteractable && Distance <= InteractionCheckDistance)
+			{
+				FoundInteractable(TraceHit.GetActor());
+				return;
+			}
+			
+			if (TraceHit.GetActor() == InteractionData.CurrentInteractable)
+			{
+				return;
+			}
+		}
+	}
+
+	NoInteractableFound();
+}
+
+void AAbyssalGuardiansCharacter::FoundInteractable(AActor* NewInteractable)
+{
+}
+
+void AAbyssalGuardiansCharacter::NoInteractableFound()
+{
+}
+
+void AAbyssalGuardiansCharacter::BeginInteract()
+{
+}
+
+void AAbyssalGuardiansCharacter::EndInteract()
+{
+}
+
+void AAbyssalGuardiansCharacter::Interact()
+{
+}
+
+
 
 void AAbyssalGuardiansCharacter::Move(const FInputActionValue& Value)
 {
