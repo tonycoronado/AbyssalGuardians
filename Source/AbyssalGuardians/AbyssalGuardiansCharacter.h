@@ -5,16 +5,60 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
-#include "OnlineSubsystem.h"
-#include "Interfaces/OnlineSessionInterface.h"
+#include "Interfaces/AGInteractionInterface.h"
 #include "AbyssalGuardiansCharacter.generated.h"
 
+USTRUCT()
+struct FInteractionData
+{
+	GENERATED_USTRUCT_BODY()
 
+	UPROPERTY()
+	AActor* CurrentInteractable;
+
+	FInteractionData() :  CurrentInteractable(nullptr), LastInteractionCheckTime(0.0f)
+	{
+		
+	}
+	UPROPERTY()
+	float LastInteractionCheckTime;
+};
 
 UCLASS(config=Game)
 class AAbyssalGuardiansCharacter : public ACharacter
 {
 	GENERATED_BODY()
+
+	
+
+public:
+
+	//==========================================================================
+	// PROPERTIES AND VARIABLES
+	//==========================================================================\
+	
+	
+
+	//==========================================================================
+	// FUNCTIONS
+	//==========================================================================
+	
+	
+	AAbyssalGuardiansCharacter();
+	
+	/** Returns CameraBoom subobject **/
+	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+	
+	/** Returns FollowCamera subobject **/
+	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	
+
+protected:
+	
+
+	//==========================================================================
+	// PROPERTIES AND VARIABLES
+	//==========================================================================\
 
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -40,33 +84,40 @@ class AAbyssalGuardiansCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAction;
 
-public:
-	AAbyssalGuardiansCharacter();
-	
+	UPROPERTY(VisibleAnywhere, Category = "Character | Interaction")
+	TScriptInterface<IAGInteractionInterface> TargetInteractable;
 
-protected:
+	float InteractionCheckFrequency;
+
+	float InteractionCheckDistance;
+
+	FTimerHandle TimerHandleInteraction;
+
+	FInteractionData InteractionData;
+
+	//==========================================================================
+	// FUNCTIONS
+	//==========================================================================
+	void PerformInteractionCheck();
+	void FoundInteractable(AActor* NewInteractable);
+	void NoInteractableFound();
+	void BeginInteract();
+	void EndInteract();
+	void Interact();
+
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaSeconds) override;
+	
 
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
-			
-
-protected:
+	
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	
-	// To add mapping context
-	virtual void BeginPlay();
 
-public:
-	/** Returns CameraBoom subobject **/
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
-	/** Returns FollowCamera subobject **/
-	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-
-	// Pointer to the online session interface
-	TSharedPtr<class IOnlineSession, ESPMode::ThreadSafe> OnlineSessionInterface;
 };
 
